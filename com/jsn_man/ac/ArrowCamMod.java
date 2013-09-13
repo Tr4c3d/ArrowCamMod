@@ -17,13 +17,13 @@ import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-@Mod(modid = "ArrowCamMod", name = "Arrow Cam Mod", version = "1.0.0")
+@Mod(modid = "ArrowCamMod", name = "Arrow Cam Mod", version = "1.1.0")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class ArrowCamMod{
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event){
-		//TODO: Use for config
+		//TODO: Load a config if I want to have one
 	}
 	
 	@EventHandler
@@ -65,10 +65,12 @@ public class ArrowCamMod{
 				
 				hideGUI = mc.gameSettings.hideGUI;
 				fovSetting = mc.gameSettings.fovSetting;
+				thirdPersonView = mc.gameSettings.thirdPersonView;
 				
-				mc.renderViewEntity = camera;
 				mc.gameSettings.hideGUI = true;
 				mc.gameSettings.fovSetting *= 1.1F;
+				mc.gameSettings.thirdPersonView = thirdPersonView != 0 ? thirdPersonView : 1;
+				mc.renderViewEntity = camera;
 			}else{
 				camera = null;
 			}
@@ -82,9 +84,10 @@ public class ArrowCamMod{
 	public void stopArrowCam(){
 		if(isInArrowCam()){
 			Minecraft mc = Minecraft.getMinecraft();
-			mc.renderViewEntity = mc.thePlayer;
 			mc.gameSettings.hideGUI = hideGUI;
 			mc.gameSettings.fovSetting = fovSetting;
+			mc.gameSettings.thirdPersonView = thirdPersonView;
+			mc.renderViewEntity = mc.thePlayer;
 			
 			camera.setDead();
 			camera = null;
@@ -115,25 +118,6 @@ public class ArrowCamMod{
 		}
 	}
 	
-	/**
-	 * More or less "proper", may need modification if used for other purposes.
-	 * This atan2 method should work better with Q2 and Q3 coords than the default one
-	 * @param x x coordinate
-	 * @param y y coordinate
-	 * @return The angle in degrees of the given coordinates relative to the center
-	 */
-	public static double properAtan2(double x, double y){
-		double degrees = Math.atan2(y, x) * 180.0 / Math.PI;
-		int quadrent = x > 0 && y < 0 ? 4 : (x < 0 && y < 0 ? 3 : (x < 0 && y > 0 ? 2 : 1));
-		
-		if(quadrent == 2 || quadrent == 3){
-			degrees += 180.0;
-			degrees *= -1.0;
-		}
-		
-		return degrees;
-	}
-	
 	@Instance("ArrowCamMod")
 	public static ArrowCamMod instance;
 	
@@ -150,4 +134,7 @@ public class ArrowCamMod{
 	
 	/** Stores the FOV before entering arrow cam */
 	private float fovSetting;
+	
+	/** Stores the POV before entering arrow cam */
+	private int thirdPersonView;
 }

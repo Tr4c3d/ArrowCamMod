@@ -16,20 +16,15 @@ public class EntityCamera extends EntityLivingBase{
 	public EntityCamera(World world){
 		super(world);
 		delay = 10;
-		lastLastTargetPos = new double[3];
-		lastLastTargetRotation = new float[2];
 		setSize(0.0F, 0.0F);
 		boundingBox.setBounds(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+		yOffset = 0.0F;
 	}
 	
 	public EntityCamera(EntityArrow arrow){
 		this(arrow.worldObj);
 		setTarget(arrow);
-		lastLastTargetPos[0] = target.posX;
-		lastLastTargetPos[1] = target.posY;
-		lastLastTargetPos[2] = target.posZ;
-		lastLastTargetRotation[0] = 360.0F - target.rotationYaw;
-		lastLastTargetRotation[1] = 360.0F - target.rotationPitch;
+		target.renderDistanceWeight *= 4.0; //This might make the arrow render farther from the player
 		setPositionAndRotation(target.posX, target.posY, target.posZ, 360.0F - target.rotationYaw, 360.0F - target.rotationPitch);
 	}
 	
@@ -41,39 +36,11 @@ public class EntityCamera extends EntityLivingBase{
 			//Is the arrow alive and is it still in the air?
 			if(target.isEntityAlive() && !ArrowCamMod.isArrowInGround(target)){
 				
-				//IMPORTANT: Only subtract 1.0 from the y if you are not using trig
-				setPosition(lastLastTargetPos[0], lastLastTargetPos[1] - 1.0, lastLastTargetPos[2]);
+				//Takes the midpoint from the current position and the target's position so it's not so choppy
+				setPosition((posX + target.posX)/2.0F, (posY + target.posY)/2.0F, (posZ + target.posZ)/2.0F);
 				
-				//Storing the last tick position so the camera is where the arrow was 2 ticks ago
-				lastLastTargetPos[0] = target.lastTickPosX;
-				lastLastTargetPos[1] = target.lastTickPosY;
-				lastLastTargetPos[2] = target.lastTickPosZ;
-				
-				//Method to find the viewing angle without using trig
-				setRotation(lastLastTargetRotation[0], lastLastTargetRotation[1]);
-				
-				//Same as lastLastTargetPos except for this one stores rotation
-				//It works better if you subtract the angles from 360
-				lastLastTargetRotation[0] = 360.0F - target.prevRotationYaw;
-				lastLastTargetRotation[1] = 360.0F - target.prevRotationPitch;
-				
-				/*
-				 * Method to find the viewing angle using trig
-				 * Not really worth the processing power
-				 * 
-				 * When using this method, the rotationYaw isn't correct if you fire the arrow in the positive x direction
-				 * 
-				//Should we use x or z for the x coord on our atan2?
-				//Because atan2 is a 2D function, we have to simplify 3D
-				boolean useX = Math.abs(target.posX - posX) >= Math.abs(target.posZ - posZ);
-				
-				//By using trig, we can use the relative coords of the arrow to find the best viewing angle
-				//Or at least that's the idea
-				setRotation(
-						90.0F + (float)-ArrowCamMod.properAtan2(target.posX - posX, target.posZ - posZ),
-						(float)-ArrowCamMod.properAtan2(useX ? target.posX - posX : target.posZ - posZ, target.posY - posY)
-				);
-				*/
+				//Should also take the average of the rotations, but for some reason it's more complicated than you'd think
+				setRotation(360.0F - target.rotationYaw, 360.0F - target.rotationPitch);
 				
 			}else if(--delay <= 0){
 				ArrowCamMod.instance.stopArrowCam();
@@ -89,6 +56,10 @@ public class EntityCamera extends EntityLivingBase{
 		Chunk chunk = worldObj.getChunkFromBlockCoords((int)posX, (int)posY);
 		if(!chunk.isChunkLoaded){
 			worldObj.getChunkProvider().loadChunk(chunk.xPosition, chunk.zPosition);
+		}
+		
+		if(!Minecraft.getMinecraft().thePlayer.isSneaking()){
+			ArrowCamMod.instance.stopArrowCam();
 		}
 	}
 	
@@ -177,18 +148,6 @@ public class EntityCamera extends EntityLivingBase{
 	
 	/** How many ticks the camera will stay around for after the arrow is dead or in a block */
 	public int delay;
-	
-	/**
-	 * The position of the target 2 ticks ago
-	 * [x, y, z]
-	 */
-	public double[] lastLastTargetPos;
-	
-	/**
-	 * The rotation of the target 2 ticks ago
-	 * [yaw, pitch]
-	 */
-	public float[] lastLastTargetRotation;
 	
 	/** The arrow that the camera is following */
 	public EntityArrow target;

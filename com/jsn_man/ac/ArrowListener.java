@@ -1,14 +1,16 @@
 package com.jsn_man.ac;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.EntityInteractEvent;
 
 public class ArrowListener{
 	
 	@ForgeSubscribe
-	public void onEntityJoinWorld(EntityJoinWorldEvent event) throws Exception{
+	public void onEntityJoinWorld(EntityJoinWorldEvent event){
 		if(event.entity instanceof EntityArrow){
 			
 			//Why can't we just process the arrow here?
@@ -22,6 +24,15 @@ public class ArrowListener{
 		}
 	}
 	
+	@ForgeSubscribe
+	public void onEntityInteract(EntityInteractEvent event){
+		
+		//Just so that the player will never interact with the camera
+		if(event.target instanceof EntityCamera){
+			event.setCanceled(true);
+		}
+	}
+	
 	public static class VerifyArrowTask implements Runnable{
 		
 		public VerifyArrowTask(EntityArrow a){
@@ -29,7 +40,15 @@ public class ArrowListener{
 		}
 		
 		public void run(){
-			if(arrow.shootingEntity != null && !arrow.isDead && arrow.shootingEntity.equals(Minecraft.getMinecraft().thePlayer)){
+			EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+			
+			if(
+				arrow.shootingEntity != null &&
+				!arrow.isDead && !ArrowCamMod.isArrowInGround(arrow) &&
+				arrow.shootingEntity.equals(player) &&
+				player.isSneaking() &&
+				arrow.getDistanceSqToEntity(player) <= 9.0
+			){
 				ArrowCamMod.instance.startArrowCam(arrow);
 			}
 		}
