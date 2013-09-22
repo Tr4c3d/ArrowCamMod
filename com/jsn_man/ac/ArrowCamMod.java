@@ -17,7 +17,7 @@ import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-@Mod(modid = "ArrowCamMod", name = "Arrow Cam Mod", version = "1.1.0")
+@Mod(modid = "ArrowCamMod", name = "Arrow Cam Mod", version = "1.1.2")
 @NetworkMod(clientSideRequired = false, serverSideRequired = false)
 public class ArrowCamMod{
 	
@@ -28,7 +28,7 @@ public class ArrowCamMod{
 	
 	@EventHandler
 	public void load(FMLInitializationEvent event){
-		EntityRegistry.registerModEntity(EntityCamera.class, "Camera", EntityRegistry.findGlobalUniqueEntityId(), this, 64, 5, false);
+		EntityRegistry.registerModEntity(EntityCamera.class, "ArrowCamera", EntityRegistry.findGlobalUniqueEntityId(), this, 64, 5, false);
 		
 		if(event.getSide().equals(Side.CLIENT)){
 			MinecraftForge.EVENT_BUS.register(new ArrowListener());
