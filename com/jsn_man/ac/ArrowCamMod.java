@@ -5,20 +5,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.EntityRegistry;
-import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-@Mod(modid = "ArrowCamMod", name = "Arrow Cam Mod", version = "1.1.2")
-@NetworkMod(clientSideRequired = false, serverSideRequired = false)
+@Mod(modid = ArrowCamMod.MODID, name = ArrowCamMod.NAME, version = ArrowCamMod.VERSION)
 public class ArrowCamMod{
 	
 	@EventHandler
@@ -28,13 +26,13 @@ public class ArrowCamMod{
 	
 	@EventHandler
 	public void load(FMLInitializationEvent event){
-		EntityRegistry.registerModEntity(EntityCamera.class, "ArrowCamera", EntityRegistry.findGlobalUniqueEntityId(), this, 64, 5, false);
+		EntityRegistry.registerModEntity(EntityCamera.class, "ArrowCamera", EntityRegistry.findGlobalUniqueEntityId(), this, 256, 1, true);
 		
 		if(event.getSide().equals(Side.CLIENT)){
 			MinecraftForge.EVENT_BUS.register(new ArrowListener());
 			
 			ticker = new TickHandler();
-			TickRegistry.registerTickHandler(ticker, Side.CLIENT);
+			FMLCommonHandler.instance().bus().register(ticker);
 			
 		}else if(!Minecraft.getMinecraft().isIntegratedServerRunning()){
 			FMLLog.severe("The Arrow Cam Mod is a client only mod. Running it on a server will cause undefined behavior! Please remove this mod from your server ASAP.");
@@ -118,7 +116,11 @@ public class ArrowCamMod{
 		}
 	}
 	
-	@Instance("ArrowCamMod")
+	public static final String MODID = "ArrowCamMod",
+			NAME = "ArrowCamMod",
+			VERSION = "2.0.0";
+	
+	@Instance(ArrowCamMod.MODID)
 	public static ArrowCamMod instance;
 	
 	/** There should only ever be one camera in the game */
@@ -126,7 +128,6 @@ public class ArrowCamMod{
 	public EntityCamera camera;
 	
 	/** Basically just processes tasks at the end of each tick. See ArrowListener for why this is necessary */
-	@SideOnly(Side.CLIENT)
 	public TickHandler ticker;
 	
 	/** Stores whether or not the GUI is hidden before entering arrow cam */

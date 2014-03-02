@@ -8,6 +8,7 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
@@ -15,10 +16,10 @@ public class EntityCamera extends EntityLivingBase{
 	
 	public EntityCamera(World world){
 		super(world);
-		delay = 10;
 		setSize(0.0F, 0.0F);
 		boundingBox.setBounds(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 		yOffset = 0.0F;
+		deathDelay = 20;
 	}
 	
 	public EntityCamera(EntityArrow arrow){
@@ -33,16 +34,14 @@ public class EntityCamera extends EntityLivingBase{
 		super.onLivingUpdate();
 		
 		if(target != null){
-			//Is the arrow alive and is it still in the air?
-			if(target.isEntityAlive() && !ArrowCamMod.isArrowInGround(target)){
-				
-				//Takes the midpoint from the current position and the target's position so it's not so choppy
-				setPosition((posX + target.posX)/2.0F, (posY + target.posY)/2.0F, (posZ + target.posZ)/2.0F);
-				
-				//Should also take the average of the rotations, but for some reason it's more complicated than you'd think
-				setRotation(360.0F - target.rotationYaw, 360.0F - target.rotationPitch);
-				
-			}else if(--delay <= 0){
+			//Takes the midpoint from the current position and the target's position so it's not so choppy
+			setPosition((posX + target.posX)/2.0F, (posY + target.posY)/2.0F, (posZ + target.posZ)/2.0F);
+			
+			//Should also take the average of the rotations, but for some reason it's more complicated than you'd think
+			setRotation(360.0F - target.rotationYaw, 360.0F - target.rotationPitch);
+			
+			//Is the arrow dead or is it in the ground? If so, is the delay <= 0 yet?
+			if((!target.isEntityAlive() || ArrowCamMod.isArrowInGround(target)) && --deathDelay <= 0){
 				ArrowCamMod.instance.stopArrowCam();
 			}
 		}
@@ -69,17 +68,6 @@ public class EntityCamera extends EntityLivingBase{
 	
 	public EntityArrow getTarget(){
 		return target;
-	}
-	
-	//We don't want the camera to be saved/loaded from games
-	@Override
-	public void writeToNBT(NBTTagCompound tag){
-		
-	}
-	
-	@Override
-	public void readFromNBT(NBTTagCompound tag){
-		
 	}
 	
 	//For some reason the regular method throws an NPE, so I rerouted it to the player
@@ -132,7 +120,7 @@ public class EntityCamera extends EntityLivingBase{
 	}
 	
 	@Override
-	public ItemStack getCurrentItemOrArmor(int i){
+	public ItemStack getEquipmentInSlot(int i){
 		return null;
 	}
 	
@@ -147,7 +135,7 @@ public class EntityCamera extends EntityLivingBase{
 	}
 	
 	/** How many ticks the camera will stay around for after the arrow is dead or in a block */
-	public int delay;
+	public int deathDelay;
 	
 	/** The arrow that the camera is following */
 	public EntityArrow target;

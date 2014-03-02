@@ -1,15 +1,15 @@
 package com.jsn_man.ac;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
 
 public class ArrowListener{
 	
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void onEntityJoinWorld(EntityJoinWorldEvent event){
 		if(event.entity instanceof EntityArrow){
 			
@@ -24,7 +24,7 @@ public class ArrowListener{
 		}
 	}
 	
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void onEntityInteract(EntityInteractEvent event){
 		
 		//Just so that the player will never interact with the camera
@@ -47,7 +47,7 @@ public class ArrowListener{
 				!arrow.isDead && !ArrowCamMod.isArrowInGround(arrow) &&
 				arrow.shootingEntity.equals(player) &&
 				player.isSneaking() &&
-				arrow.getDistanceSqToEntity(player) <= 9.0
+				arrow.getDistanceSqToEntity(player) <= 16.0
 			){
 				ArrowCamMod.instance.startArrowCam(arrow);
 			}
