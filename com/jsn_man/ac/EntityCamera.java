@@ -43,6 +43,7 @@ public class EntityCamera extends EntityLivingBase{
 			//Is the arrow dead or is it in the ground? If so, is the delay <= 0 yet?
 			if((!target.isEntityAlive() || ArrowCamMod.isArrowInGround(target)) && --deathDelay <= 0){
 				ArrowCamMod.instance.stopArrowCam();
+				return;
 			}
 		}
 		
@@ -57,7 +58,7 @@ public class EntityCamera extends EntityLivingBase{
 			worldObj.getChunkProvider().loadChunk(chunk.xPosition, chunk.zPosition);
 		}
 		
-		if(!Minecraft.getMinecraft().thePlayer.isSneaking()){
+		if(Minecraft.getMinecraft().thePlayer == null || !Minecraft.getMinecraft().thePlayer.isSneaking()){
 			ArrowCamMod.instance.stopArrowCam();
 		}
 	}
